@@ -1,15 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"reflect"
-	"json"
 	"log"
 	"net/http"
 )
 
 // global context
-registryContext := make(map[string]interface{})
+var registryContext = make(map[string]interface{})
 
 func hello(w http.ResponseWriter, req *http.Request) {
 
@@ -18,12 +17,13 @@ func hello(w http.ResponseWriter, req *http.Request) {
 
 type RegisterObjectCommand struct {
 	version       uint
+	name          string
 	remoteAddress string
 }
 
-
-func registerObject(command *RegisterObjectCommand) {
-	registryContext[""]
+func registerObject(command RegisterObjectCommand) {
+	objectKey := fmt.Sprintf("%s:%d", command.name, command.version)
+	registryContext[objectKey] = command.remoteAddress
 }
 
 func register(w http.ResponseWriter, req *http.Request) {
