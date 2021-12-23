@@ -21,6 +21,11 @@ func headers(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 
+	// implement objects methods
+	// implement parsing and performing incoming command
+	// initialize objects
+	// register them to registry
+
 	http.HandleFunc("/hello", hello)
 	http.HandleFunc("/headers", headers)
 

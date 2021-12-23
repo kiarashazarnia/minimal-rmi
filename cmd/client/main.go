@@ -21,6 +21,10 @@ func headers(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 
+	// impelement client stub to serialize and send command to the remote dest
+	// lookup registry for object
+	// call object
+
 	http.HandleFunc("/hello", hello)
 	http.HandleFunc("/headers", headers)
 
