@@ -1,4 +1,4 @@
-package main
+package rmi
 
 import (
 	"encoding/json"
@@ -15,23 +15,12 @@ func hello(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "hello\n")
 }
 
-type RegisterObjectCommand struct {
-	version       uint
-	name          string
-	remoteAddress string
-}
-
-type LookupCommand struct {
-	version uint
-	name    string
-}
-
-func generateKey(name, version string) string {
-	return fmt.Sprintf("%s:%d", command.name, command.version)
+func generateKey(name string, version uint) string {
+	return fmt.Sprintf("%s:%d", name, version)
 }
 
 func registerObject(command RegisterObjectCommand) {
-	objectKey := generateKey(command.name, command.version)
+	objectKey := generateKey(command.Name, command.Version)
 	registryContext[objectKey] = command
 }
 
@@ -54,11 +43,11 @@ func lookup(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	objectKey := generateKey(lookupCommand.name, lookupCommand.version)
-	remoteObject = registryContext[objectKey]
+	objectKey := generateKey(lookupCommand.Name, lookupCommand.Version)
+	remoteObject := registryContext[objectKey]
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "applicatoin/json")
-	json.NewDecoder(w).Encode(remoteObject)
+	json.NewEncoder(w).Encode(remoteObject)
 }
 
 func main() {

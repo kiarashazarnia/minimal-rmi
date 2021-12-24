@@ -1,10 +1,16 @@
-package main
+package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"reflect"
+	"runtime"
+
+	"github.com/kiarashazarnia/minimal-rmi/cmd/rmi"
 )
 
 func hello(w http.ResponseWriter, req *http.Request) {
@@ -21,31 +27,38 @@ func headers(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-type Hello interface {
-	SayHello() string
-}
-
 type HelloStub struct {
+	name          string
+	version       int
 	remoteAddress string
 }
 
+func GetFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+}
+
 func (h *HelloStub) SayHello() string {
-	data = {"dummy": "dummy"}
-	body := json.Marshal(data)
-	response, err = http.Post(h.remoteAddress, "application/json", body)
-	return string(response.Body)
+	body, _ := json.Marshal(h)
+	requestBody := bytes.NewBuffer(body)
+	response, _ := http.Post(h.remoteAddress, "application/json", requestBody)
+	defer response.Body.Close()
+	responseBody, _ := ioutil.ReadAll(response.Body)
+	return string(responseBody)
 }
 
-
-func lookup(objectType Type, version int) interface{} {
-	return nil
+func lookup(objectType reflect.Type, version int) interface{} {
+	salam := rmi.Salam{Name: "salam"}
+	fmt.Println(salam)
+	return HelloStub{
+		name:          "name",
+		version:       version,
+		remoteAddress: "localhost",
+	}
 }
-
-
 
 func main() {
-
-	hello := lookup(Hello, 1)
+	var hello rmi.Hello
+	hello = lookup(reflect.TypeOf(hello), 1).(rmi.Hello)
 	result := hello.SayHello()
-	log.remote("Hello object remote call:" + result)
+	log.Print("rmi.Hello object remote call:" + result)
 }

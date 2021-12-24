@@ -1,8 +1,11 @@
-package main
+package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"bytes"
+	"github.com/kiarashazarnia/minimal-rmi/cmd/rmi"
 )
 
 func headers(w http.ResponseWriter, req *http.Request) {
@@ -29,13 +32,15 @@ func main() {
 	http.ListenAndServe(":8090", nil)
 }
 
-func register(hello interface{}) {
-	data := {
-		"version": 	1,
-		"name": "hello"
+func register(hello interface{}) bool {
+	data := rmi.RegisterObjectCommand{
+		Version:       1,
+		Name:          "hello",
+		RemoteAddress: "http://localhost:8081",
 	}
-	jsonData, err = json.Marshal(data)
-	resp, err = http.Post("http://localhost:8080", "application/json", bytes.newBuffer(jsonData))
+	jsonData, _ := json.Marshal(data)
+	response, _ := http.Post("http://localhost:8080", "application/json", bytes.NewBuffer(jsonData))
+	return response.StatusCode == http.StatusOK
 }
 
 type HelloRemoteObject struct {
