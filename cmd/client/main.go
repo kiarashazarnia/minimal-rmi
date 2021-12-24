@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"log"
 )
 
 func hello(w http.ResponseWriter, req *http.Request) {
@@ -19,14 +21,31 @@ func headers(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+type Hello interface {
+	SayHello() string
+}
+
+type HelloStub struct {
+	remoteAddress string
+}
+
+func (h *HelloStub) SayHello() string {
+	data = {"dummy": "dummy"}
+	body := json.Marshal(data)
+	response, err = http.Post(h.remoteAddress, "application/json", body)
+	return string(response.Body)
+}
+
+
+func lookup(objectType Type, version int) interface{} {
+	return nil
+}
+
+
+
 func main() {
 
-	// impelement client stub to serialize and send command to the remote dest
-	// lookup registry for object
-	// call object
-
-	http.HandleFunc("/hello", hello)
-	http.HandleFunc("/headers", headers)
-
-	http.ListenAndServe(":8090", nil)
+	hello := lookup(Hello, 1)
+	result := hello.SayHello()
+	log.remote("Hello object remote call:" + result)
 }

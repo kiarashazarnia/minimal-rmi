@@ -5,11 +5,6 @@ import (
 	"net/http"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
-
-	fmt.Fprintf(w, "hello\n")
-}
-
 func headers(w http.ResponseWriter, req *http.Request) {
 
 	for name, headers := range req.Header {
@@ -26,8 +21,38 @@ func main() {
 	// initialize objects
 	// register them to registry
 
-	http.HandleFunc("/hello", hello)
-	http.HandleFunc("/headers", headers)
+	var hello Hello = new(HelloRemoteObject)
 
+	register(hello)
+
+	http.HandleFunc("/headers", headers)
 	http.ListenAndServe(":8090", nil)
+}
+
+func register(hello interface{}) {
+	data := {
+		"version": 	1,
+		"name": "hello"
+	}
+	jsonData, err = json.Marshal(data)
+	resp, err = http.Post("http://localhost:8080", "application/json", bytes.newBuffer(jsonData))
+}
+
+type HelloRemoteObject struct {
+	helloSentence string
+}
+
+type Hello interface {
+	SayHello() string
+}
+
+func (h *HelloRemoteObject) SayHello() string {
+	return h.helloSentence
+}
+
+type Calculator interface {
+	Sum(a float32, b float32) float32
+	Subtract(a float32, b float32) float32
+	Multiple(a float32, b float32) float32
+	Devide(a float32, b float32) float32
 }

@@ -32,7 +32,7 @@ func generateKey(name, version string) string {
 
 func registerObject(command RegisterObjectCommand) {
 	objectKey := generateKey(command.name, command.version)
-	registryContext[objectKey] = command.remoteAddress
+	registryContext[objectKey] = command
 }
 
 func register(w http.ResponseWriter, req *http.Request) {
@@ -55,8 +55,10 @@ func lookup(w http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 	objectKey := generateKey(lookupCommand.name, lookupCommand.version)
-	remoteAddress = registryContext[objectKey]
-	// send as response
+	remoteObject = registryContext[objectKey]
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "applicatoin/json")
+	json.NewDecoder(w).Encode(remoteObject)
 }
 
 func main() {
