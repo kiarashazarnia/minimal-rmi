@@ -3,44 +3,46 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
+	"reflect"
 
 	"github.com/kiarashazarnia/minimal-rmi/pkg/rmi"
 )
 
-func headers(w http.ResponseWriter, req *http.Request) {
-
-	for name, headers := range req.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v: %v\n", name, h)
-		}
+func remote(w http.ResponseWriter, req *http.Request) {
+	decoder := json.NewDecoder(req.Body)
+	var methodCall rmi.MethodCall
+	err := decoder.Decode(&methodCall)
+	if err != nil {
+		panic(err)
 	}
+	handleMethodCall(methodCall)
+
+	log.Println(methodCall)
 }
+
+var config = rmi.LoadConfig()
 
 func main() {
 
-	// implement objects methods
-	// implement parsing and performing incoming command
-	// initialize objects
-	// register them to registry
-
 	var hello Hello = new(HelloRemoteObject)
 
-	register(hello)
+	register(hello, 1)
 
-	http.HandleFunc("/headers", headers)
-	http.ListenAndServe(":8090", nil)
+	http.HandleFunc("/remote", remote)
+	http.ListenAndServe(config.REMOTE_HOST, nil)
 }
 
-func register(hello interface{}) bool {
+func register(object interface{}, version uint) bool {
+
 	data := rmi.RegisterObjectCommand{
-		Version:       1,
-		Name:          "hello",
-		RemoteAddress: "http://localhost:8081",
+		Version:       version,
+		Name:          reflect.TypeOf(object).Name(),
+		RemoteAddress: config.REMOTE_HOST,
 	}
 	jsonData, _ := json.Marshal(data)
-	response, _ := http.Post("http://localhost:8080", "application/json", bytes.NewBuffer(jsonData))
+	response, _ := http.Post(config.RMI_HOST, "application/json", bytes.NewBuffer(jsonData))
 	return response.StatusCode == http.StatusOK
 }
 

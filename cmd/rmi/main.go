@@ -11,6 +11,7 @@ import (
 
 // global context
 var registryContext = make(map[string]interface{})
+var config = rmi.LoadConfig()
 
 func hello(w http.ResponseWriter, req *http.Request) {
 
@@ -27,7 +28,6 @@ func registerObject(command rmi.RegisterObjectCommand) {
 }
 
 func register(w http.ResponseWriter, req *http.Request) {
-
 	decoder := json.NewDecoder(req.Body)
 	var registerObjectCommand rmi.RegisterObjectCommand
 	err := decoder.Decode(&registerObjectCommand)
@@ -54,8 +54,7 @@ func lookup(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 
-	http.HandleFunc("/hello", hello)
 	http.HandleFunc("/register", register)
 	http.HandleFunc("/lookup", lookup)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(config.RMI_HOST, nil)
 }

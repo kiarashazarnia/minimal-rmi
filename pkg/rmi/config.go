@@ -11,8 +11,8 @@ var (
 )
 
 type Configuration struct {
-	rmi_host    string
-	remote_host string
+	RMI_HOST    string
+	REMOTE_HOST string
 }
 
 func LoadConfig() *Configuration {
@@ -26,7 +26,7 @@ func LoadConfig() *Configuration {
 		if err != nil {
 			fmt.Println("error:", err)
 		}
-		fmt.Println(config.rmi_host)
+		fmt.Println(config.RMI_HOST)
 	}
 
 	return config

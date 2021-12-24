@@ -1,4 +1,4 @@
 {
-    "rmi_host": "http://localhost:9080",
-    "remote_host": "http://localhost:9081"
+    "RMI_HOST": "http://localhost:9080/register",
+    "REMOTE_HOST": "http://localhost:9081"
 }

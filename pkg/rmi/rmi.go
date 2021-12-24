@@ -25,3 +25,9 @@ type LookupCommand struct {
 	Version uint
 	Name    string
 }
+
+type MethodCall struct {
+	Target     LookupCommand
+	MethodName string
+	parameters string
+}
