@@ -1,0 +1,4 @@
+{
+    "rmi_host": "http://localhost:9080",
+    "remote_host": "http://localhost:9081"
+}
