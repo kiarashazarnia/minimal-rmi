@@ -1,11 +1,12 @@
-package server
+package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"bytes"
-	"github.com/kiarashazarnia/minimal-rmi/cmd/rmi"
+
+	"github.com/kiarashazarnia/minimal-rmi/pkg/rmi"
 )
 
 func headers(w http.ResponseWriter, req *http.Request) {

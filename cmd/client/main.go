@@ -1,4 +1,4 @@
-package client
+package main
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"runtime"
 
-	"github.com/kiarashazarnia/minimal-rmi/cmd/rmi"
+	"github.com/kiarashazarnia/minimal-rmi/pkg/rmi"
 )
 
 func hello(w http.ResponseWriter, req *http.Request) {
