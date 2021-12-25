@@ -13,6 +13,8 @@ import (
 	"github.com/kiarashazarnia/minimal-rmi/pkg/rmi"
 )
 
+var config = rmi.LoadConfig()
+
 func hello(w http.ResponseWriter, req *http.Request) {
 
 	fmt.Fprintf(w, "hello\n")
@@ -58,6 +60,7 @@ func lookup(objectType reflect.Type, version int) interface{} {
 
 func main() {
 	var hello rmi.Hello
+	rmi.WaitForServer(config.RMI_HOST)
 	hello = lookup(reflect.TypeOf(hello), 1).(rmi.Hello)
 	result := hello.SayHello()
 	log.Print("rmi.Hello object remote call:" + result)

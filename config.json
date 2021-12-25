@@ -1,0 +1,4 @@
+{
+    "RMI_HOST": "localhost:9080",
+    "REMOTE_HOST": "localhost:9081"
+}

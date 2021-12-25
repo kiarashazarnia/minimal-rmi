@@ -3,12 +3,31 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"reflect"
 
 	"github.com/kiarashazarnia/minimal-rmi/pkg/rmi"
 )
+
+var objectsContext = make(map[string]interface{})
+
+func Invoke(any interface{}, name string, args ...interface{}) []reflect.Value {
+	inputs := make([]reflect.Value, len(args))
+	for i, _ := range args {
+		inputs[i] = reflect.ValueOf(args[i])
+	}
+	return reflect.ValueOf(any).MethodByName(name).Call(inputs)
+}
+
+func handleMethodCall(methodCall rmi.MethodCall) {
+	values := Invoke(
+		objectsContext[rmi.GenerateKey(methodCall.Target.Name, methodCall.Target.Version)],
+		methodCall.MethodName,
+		methodCall.Parameters)
+	log.Println("method call result:", values)
+}
 
 func remote(w http.ResponseWriter, req *http.Request) {
 	decoder := json.NewDecoder(req.Body)
@@ -26,6 +45,8 @@ var config = rmi.LoadConfig()
 
 func main() {
 
+	fmt.Println("1")
+	rmi.WaitForServer(config.RMI_HOST)
 	var hello Hello = new(HelloRemoteObject)
 
 	register(hello, 1)

@@ -18,12 +18,8 @@ func hello(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "hello\n")
 }
 
-func generateKey(name string, version uint) string {
-	return fmt.Sprintf("%s:%d", name, version)
-}
-
 func registerObject(command rmi.RegisterObjectCommand) {
-	objectKey := generateKey(command.Name, command.Version)
+	objectKey := rmi.GenerateKey(command.Name, command.Version)
 	registryContext[objectKey] = command
 }
 
@@ -45,7 +41,7 @@ func lookup(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	objectKey := generateKey(lookupCommand.Name, lookupCommand.Version)
+	objectKey := rmi.GenerateKey(lookupCommand.Name, lookupCommand.Version)
 	remoteObject := registryContext[objectKey]
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "applicatoin/json")
@@ -53,8 +49,12 @@ func lookup(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-
+	fmt.Println("0")
 	http.HandleFunc("/register", register)
+	fmt.Println("1")
 	http.HandleFunc("/lookup", lookup)
+	log.Println("running server on", config.RMI_HOST)
 	http.ListenAndServe(config.RMI_HOST, nil)
+	// http.ListenAndServe(":8787", nil)
+	fmt.Println("3")
 }

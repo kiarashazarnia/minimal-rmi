@@ -2,7 +2,7 @@ package rmi
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 )
 
@@ -24,9 +24,9 @@ func LoadConfig() *Configuration {
 		config = new(Configuration)
 		err := decoder.Decode(&config)
 		if err != nil {
-			fmt.Println("error:", err)
+			log.Println("error:", err)
 		}
-		fmt.Println(config.RMI_HOST)
+		log.Println(config.RMI_HOST)
 	}
 
 	return config

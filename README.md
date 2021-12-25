@@ -15,7 +15,7 @@ These material are used to implement this code:
 2. https://stackoverflow.com/questions/7052693/how-to-get-the-name-of-a-function-in-go
 3. https://dev.to/jinxankit/go-project-structure-and-guidelines-4ccm
 4. https://stackoverflow.com/questions/16465705/how-to-handle-configuration-in-go
-5. 
+5. https://stackoverflow.com/questions/8103617/call-a-struct-and-its-method-by-name-in-go
 6. 
 7. 
 8. 
