@@ -48,20 +48,24 @@ func (h *HelloStub) SayHello() string {
 	return string(responseBody)
 }
 
-func lookup(objectType reflect.Type, version int) interface{} {
-	salam := rmi.Salam{Name: "salam"}
-	fmt.Println(salam)
-	return HelloStub{
-		name:          "name",
-		version:       version,
-		remoteAddress: "localhost",
+func lookup(name string, version uint) interface{} {
+
+	data := rmi.LookupCommand{
+		Version: version,
+		Name:    name,
 	}
+	jsonData, _ := json.Marshal(data)
+	log.Println("looking up remote object:", data)
+	url := "http://" + config.RMI_HOST + "/lookup"
+	response, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	log.Println("looking up result and error:", response, err)
+	// todo deserialize hello stub
+	return nil
 }
 
 func main() {
-	var hello rmi.Hello
 	rmi.WaitForServer(config.RMI_HOST)
-	hello = lookup(reflect.TypeOf(hello), 1).(rmi.Hello)
+	var hello rmi.Hello = lookup("<main.HelloRemoteObject Value>", 1).(rmi.Hello)
 	result := hello.SayHello()
 	log.Print("rmi.Hello object remote call:" + result)
 }
