@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"reflect"
@@ -45,13 +44,13 @@ var config = rmi.LoadConfig()
 
 func main() {
 
-	fmt.Println("1")
 	rmi.WaitForServer(config.RMI_HOST)
-	var hello Hello = new(HelloRemoteObject)
-
-	register(hello, 1)
-
 	http.HandleFunc("/remote", remote)
+	var hello Hello = HelloRemoteObject{
+		helloSentence: "Hello World",
+	}
+	register(hello, 1)
+	log.Println("running remote server on:", config.REMOTE_HOST)
 	http.ListenAndServe(config.REMOTE_HOST, nil)
 }
 
@@ -59,11 +58,14 @@ func register(object interface{}, version uint) bool {
 
 	data := rmi.RegisterObjectCommand{
 		Version:       version,
-		Name:          reflect.TypeOf(object).Name(),
+		Name:          reflect.ValueOf(object).String(),
 		RemoteAddress: config.REMOTE_HOST,
 	}
 	jsonData, _ := json.Marshal(data)
-	response, _ := http.Post(config.RMI_HOST, "application/json", bytes.NewBuffer(jsonData))
+	log.Println("registering remote object:", data)
+	url := "http://" + config.RMI_HOST + "/register"
+	response, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	log.Println("registeration result and error:", response, err)
 	return response.StatusCode == http.StatusOK
 }
 
@@ -75,7 +77,7 @@ type Hello interface {
 	SayHello() string
 }
 
-func (h *HelloRemoteObject) SayHello() string {
+func (h HelloRemoteObject) SayHello() string {
 	return h.helloSentence
 }
 

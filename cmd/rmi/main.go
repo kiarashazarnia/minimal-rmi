@@ -55,6 +55,5 @@ func main() {
 	http.HandleFunc("/lookup", lookup)
 	log.Println("running server on", config.RMI_HOST)
 	http.ListenAndServe(config.RMI_HOST, nil)
-	// http.ListenAndServe(":8787", nil)
 	fmt.Println("3")
 }

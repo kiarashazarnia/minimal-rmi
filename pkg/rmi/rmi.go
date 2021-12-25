@@ -57,7 +57,7 @@ func WaitForServer(host string) {
 		}
 		if conn != nil {
 			defer conn.Close()
-			fmt.Println("Connected to Server:", host)
+			fmt.Println("Server is responsive:", host)
 			break
 		}
 
