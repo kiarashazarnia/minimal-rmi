@@ -35,10 +35,6 @@ type HelloStub struct {
 	remoteAddress string
 }
 
-func GetFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
-}
-
 func (h *HelloStub) SayHello() string {
 	body, _ := json.Marshal(h)
 	requestBody := bytes.NewBuffer(body)
@@ -46,6 +42,10 @@ func (h *HelloStub) SayHello() string {
 	defer response.Body.Close()
 	responseBody, _ := ioutil.ReadAll(response.Body)
 	return string(responseBody)
+}
+
+func GetFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 
 func lookup(name string, version uint) interface{} {
@@ -65,7 +65,9 @@ func lookup(name string, version uint) interface{} {
 
 func main() {
 	rmi.WaitForServer(config.RMI_HOST)
-	var hello rmi.Hello = lookup("<main.HelloRemoteObject Value>", 1).(rmi.Hello)
+
+	var hello rmi.Hello = lookup("<rmi.Hello Value>", 1).(rmi.Hello)
 	result := hello.SayHello()
+
 	log.Print("rmi.Hello object remote call:" + result)
 }
