@@ -8,6 +8,50 @@ This codebase is submitted as a computer assignment for distributed systems cour
 ## Run
 
 
+## Description 
+
+```golang
+
+
+//************** rmi server *****************
+
+type Hello interface {
+	SayHello() string
+}
+
+// ***************** remote object server *****************
+
+type HelloRemoteObject struct {
+	helloSentence string
+}
+
+func (h HelloRemoteObject) SayHello() string {
+	return h.helloSentence
+}
+
+
+// ***************** client *****************
+
+type HelloStub struct {
+	name          string
+	version       int
+	remoteAddress string
+}
+
+func (h *HelloStub) SayHello() string {
+	body, _ := json.Marshal(h)
+	requestBody := bytes.NewBuffer(body)
+	response, _ := http.Post(h.remoteAddress, "application/json", requestBody)
+	defer response.Body.Close()
+	responseBody, _ := ioutil.ReadAll(response.Body)
+	return string(responseBody)
+}
+
+var hello rmi.Hello = lookup("<rmi.Hello Value>", 1).(rmi.Hello)
+result := hello.SayHello()
+
+```
+
 ## References
 These material are used to implement this code:
 
