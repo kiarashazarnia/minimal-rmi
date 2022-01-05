@@ -6,7 +6,27 @@ This codebase is submitted as a computer assignment for distributed systems cour
 
 
 ## Run
+Frist clone the project and then follow the instructions below. To change client's behaviour reffer to file `cmd/client/main.go` especially the `main` function. 
+```bash
+# first of all make sure to have golang version go1.17.5 installed on your system.
+go version
 
+# initialize environment
+make clean
+
+# compile the codes
+make build
+
+# run rmi server
+./rmi.out
+
+# run remote object server
+./server.out
+
+
+# run client process
+./client.out
+```
 
 ## Description 
 
