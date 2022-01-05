@@ -39,6 +39,11 @@ type LookupResponse struct {
 	RemoteAddress string
 }
 
+type ServerStub interface {
+	Name() string
+	Version() uint
+}
+
 type StubObject interface {
 	Name() string
 	Version() uint
@@ -75,5 +80,7 @@ func WaitForServer(host string) {
 }
 
 func GenerateKey(name string, version uint) string {
-	return fmt.Sprintf("%s:%d", name, version)
+	key := fmt.Sprintf("%s:%d", name, version)
+	log.Println("generated key:", key)
+	return key
 }

@@ -30,12 +30,10 @@ func headers(w http.ResponseWriter, req *http.Request) {
 }
 
 type HelloStub struct {
-	name          string
-	version       uint
 	remoteAddress string
 }
 
-func (h *HelloStub) SayHello() string {
+func (h HelloStub) SayHello() string {
 	body, _ := json.Marshal(h)
 	requestBody := bytes.NewBuffer(body)
 	response, _ := http.Post(h.remoteAddress, "application/json", requestBody)
@@ -44,12 +42,16 @@ func (h *HelloStub) SayHello() string {
 	return string(responseBody)
 }
 
-func (h *HelloStub) Name() string {
-	return h.name
+func (h HelloStub) Name() string {
+	return "Hello"
 }
 
-func (h *HelloStub) Version() uint {
-	return h.version
+func (h HelloStub) Version() uint {
+	return 1
+}
+
+func (h HelloStub) SetRemoteAddress(address string) {
+	h.remoteAddress = address
 }
 
 func GetFunctionName(i interface{}) string {
@@ -64,17 +66,15 @@ func lookupStub(name string, version uint, lookupResult rmi.LookupResponse) inte
 }
 
 func initStubRegistry() {
-	myTypes := []interface{}{HelloStub{}}
-	for _, v := range myTypes {
-		var stub rmi.StubObject = v.(rmi.StubObject)
-		classKey := rmi.GenerateKey(stub.Name(), stub.Version())
-		stubRegistry[classKey] = reflect.TypeOf(stub)
-	}
+	stubRegistry[rmi.GenerateKey("Hello", 1)] = reflect.TypeOf(HelloStub{})
 }
 
 func makeInstance(name string, remoteAdreess string) interface{} {
+	log.Println("making stub type:", name, " object:", stubRegistry[name])
 	v := reflect.New(stubRegistry[name]).Elem()
-	var vInterface interface{} = v
+	log.Println("object value:", v)
+	var vInterface interface{} = v.Interface()
+	log.Println("value interface:", v)
 	vInterface.(rmi.StubObject).SetRemoteAddress(remoteAdreess)
 	return v.Interface()
 }
@@ -97,7 +97,7 @@ func lookup(name string, version uint) interface{} {
 func main() {
 	initStubRegistry()
 	rmi.WaitForServer(config.RMI_HOST)
-	var hello rmi.Hello = lookup("<rmi.Hello Value>", 1).(rmi.Hello)
+	var hello rmi.Hello = lookup("Hello", 1).(rmi.Hello)
 	result := hello.SayHello()
 	log.Print("rmi.Hello object remote call:" + result)
 	// ExecuteCommand()

@@ -48,21 +48,19 @@ func main() {
 	http.HandleFunc("/remote", remote)
 
 	// we instantiate HelloRemoteObject but save it in an Hello type variable
-	var hello Hello = HelloRemoteObject{
+	var hello rmi.Hello = HelloRemoteObject{
 		helloSentence: "Hello World",
 	}
-
-	
-	register(hello, 1)
+	register(hello.(rmi.ServerStub))
 	log.Println("running remote server on:", config.REMOTE_HOST)
 	http.ListenAndServe(config.REMOTE_HOST, nil)
 }
 
-func register(object interface{}, version uint) bool {
+func register(object rmi.ServerStub) bool {
 
 	data := rmi.RegisterObjectCommand{
-		Version:       version,
-		Name:          reflect.ValueOf(object).String(),
+		Version:       object.Version(),
+		Name:          object.Name(),
 		RemoteAddress: config.REMOTE_HOST,
 	}
 	jsonData, _ := json.Marshal(data)
@@ -73,12 +71,16 @@ func register(object interface{}, version uint) bool {
 	return response.StatusCode == http.StatusOK
 }
 
-type Hello interface {
-	SayHello() string
-}
-
 type HelloRemoteObject struct {
 	helloSentence string
+}
+
+func (h HelloRemoteObject) Name() string {
+	return "Hello"
+}
+
+func (h HelloRemoteObject) Version() uint {
+	return 1
 }
 
 func (h HelloRemoteObject) SayHello() string {
