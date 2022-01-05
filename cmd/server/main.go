@@ -22,7 +22,7 @@ func Invoke(any interface{}, name string, args ...interface{}) []reflect.Value {
 
 func handleMethodCall(methodCall rmi.MethodCall) {
 	values := Invoke(
-		objectsContext[rmi.GenerateKey(methodCall.Target.Name, methodCall.Target.Version)],
+		objectsContext[rmi.GenerateKey(methodCall.ObjectName, methodCall.Version)],
 		methodCall.MethodName,
 		methodCall.Parameters)
 	log.Println("method call result:", values)

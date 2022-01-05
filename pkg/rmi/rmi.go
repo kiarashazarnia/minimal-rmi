@@ -51,7 +51,8 @@ type StubObject interface {
 }
 
 type MethodCall struct {
-	Target     LookupQuery
+	ObjectName string
+	Version    uint
 	MethodName string
 	Parameters string
 }
@@ -85,6 +86,6 @@ func GenerateKey(name string, version uint) string {
 	return key
 }
 
-func GetUrl(address string) string {
-	return fmt.Sprintf("http://%s", address)
+func RMIUrl(address string) string {
+	return fmt.Sprintf("http://%s/remote", address)
 }

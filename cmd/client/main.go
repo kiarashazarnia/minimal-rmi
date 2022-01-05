@@ -35,9 +35,16 @@ type HelloStub struct {
 
 func (h *HelloStub) SayHello() string {
 	log.Println("client stub saying hello")
-	body, _ := json.Marshal(h)
+
+	methodCall := rmi.MethodCall{
+		ObjectName: "Hello",
+		Version:    1,
+		MethodName: "SayHello",
+		Parameters: "",
+	}
+	body, _ := json.Marshal(methodCall)
 	requestBody := bytes.NewBuffer(body)
-	url := rmi.GetUrl(h.remoteAddress)
+	url := rmi.RMIUrl(h.remoteAddress)
 	log.Println("sending request:", requestBody, " address:", url)
 	response, err := http.Post(url, "application/json", requestBody)
 	log.Println("response:", response, err)
