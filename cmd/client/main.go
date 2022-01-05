@@ -3,103 +3,19 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"reflect"
-	"runtime"
 
 	"github.com/kiarashazarnia/minimal-rmi/pkg/rmi"
 )
 
 var config = rmi.LoadConfig()
 
-func hello(w http.ResponseWriter, req *http.Request) {
-
-	fmt.Fprintf(w, "hello\n")
-}
-
-func headers(w http.ResponseWriter, req *http.Request) {
-
-	for name, headers := range req.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v: %v\n", name, h)
-		}
-	}
-}
-
-type HelloClientStub struct {
-	remoteAddress string
-}
-
-func (h *HelloClientStub) SayHello() string {
-	log.Println("client stub saying hello")
-
-	methodCall := rmi.MethodCall{
-		ObjectName:    "Hello",
-		Version:       1,
-		MethodName:    "SayHello",
-		Parameters:    "",
-		HasParameters: false,
-	}
-	body, _ := json.Marshal(methodCall)
-	requestBody := bytes.NewBuffer(body)
-	url := rmi.RMIUrl(h.remoteAddress)
-	log.Println("sending request:", requestBody, " address:", url)
-	response, err := http.Post(url, "application/json", requestBody)
-	log.Println("response:", response, err)
-	defer response.Body.Close()
-	responseBody, _ := ioutil.ReadAll(response.Body)
-	result := string(responseBody)
-	log.Println("RMI result:", result)
-	return result
-}
-
-func (h *HelloClientStub) SayHelloTo(name string) string {
-	methodCall := rmi.MethodCall{
-		ObjectName:    "Hello",
-		Version:       1,
-		MethodName:    "SayHelloTo",
-		Parameters:    rmi.EncodeArguments(name),
-		HasParameters: true,
-	}
-	log.Println("client stub calling method:", methodCall)
-	body, _ := json.Marshal(methodCall)
-	requestBody := bytes.NewBuffer(body)
-	url := rmi.RMIUrl(h.remoteAddress)
-	log.Println("sending request:", requestBody, " address:", url)
-	response, err := http.Post(url, "application/json", requestBody)
-	log.Println("response:", response, err)
-	defer response.Body.Close()
-	responseBody, _ := ioutil.ReadAll(response.Body)
-	log.Println("response:", string(responseBody))
-	result := string(responseBody)
-	log.Println("RMI result:", result)
-	return result
-}
-
-func (h *HelloClientStub) Name() string {
-	return "Hello"
-}
-
-func (h *HelloClientStub) Version() uint {
-	return 1
-}
-
-func (h *HelloClientStub) SetRemoteAddress(address string) {
-	h.remoteAddress = address
-}
-
-func GetFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
-}
-
 var stubRegistry = make(map[string]reflect.Type)
 
 func lookupStub(name string, version uint, lookupResult rmi.LookupResponse) interface{} {
-	stubKey := rmi.GenerateKey(name, version)
-	return makeInstance(stubKey, lookupResult.RemoteAddress)
+	return makeInstance(name, version, lookupResult.RemoteAddress)
 }
 
 func initStubRegistry() {
@@ -109,11 +25,12 @@ func initStubRegistry() {
 	stubRegistry[rmi.GenerateKey("Factorial", 2)] = reflect.TypeOf(FactorialClientStub{})
 }
 
-func makeInstance(name string, remoteAdreess string) interface{} {
-	log.Println("making stub type:", name, " object:", stubRegistry[name])
-	v := reflect.New(stubRegistry[name]).Elem()
+func makeInstance(name string, version uint, remoteAdreess string) interface{} {
+	stubKey := rmi.GenerateKey(name, version)
+	log.Println("making stub type:", stubKey, " object:", stubRegistry[stubKey])
+	v := reflect.New(stubRegistry[stubKey]).Elem()
 	log.Println("object value:", &v)
-	var stub rmi.StubObject = nil
+	var stub rmi.ClientStub = nil
 
 	switch stubType := v.Interface().(type) {
 	case HelloClientStub:
@@ -130,6 +47,7 @@ func makeInstance(name string, remoteAdreess string) interface{} {
 	}
 	log.Println("conversion result:", stub)
 	stub.SetRemoteAddress(remoteAdreess)
+	stub.SetVersion(version)
 	return stub
 }
 
@@ -151,54 +69,24 @@ func lookup(name string, version uint) interface{} {
 func main() {
 	initStubRegistry()
 	rmi.WaitForServer(config.RMI_HOST)
-	lookedUp := lookup("Hello", 1)
-	log.Print("looked up:", reflect.TypeOf(lookedUp), lookedUp)
-	var hello rmi.Hello = lookedUp.(rmi.Hello)
-	hello.SayHello()
-	hello.SayHelloTo("Amir")
 
-	factorialStubInterface := lookup("Factorial", 1)
-	log.Print("looked up:", reflect.TypeOf(factorialStubInterface), factorialStubInterface)
-	var factorialStub1 rmi.Factorial = factorialStubInterface.(rmi.Factorial)
-	factResult := factorialStub1.Factorial(10)
-	log.Printf("factroial %d=%d", 10, factResult)
-}
+	helloStubIface1 := lookup("Hello", 1)
+	var hello1 rmi.Hello = helloStubIface1.(rmi.Hello)
+	hello1.SayHello()
+	hello1.SayHelloTo("Amir")
 
-type FactorialClientStub struct {
-	remoteAddress string
-}
+	helloStubIface2 := lookup("Hello", 2)
+	var hello2 rmi.Hello = helloStubIface2.(rmi.Hello)
+	hello2.SayHello()
+	hello2.SayHelloTo("Amir")
 
-func (h *FactorialClientStub) Factorial(num uint64) uint64 {
-	methodCall := rmi.MethodCall{
-		ObjectName:    h.Name(),
-		Version:       h.Version(),
-		MethodName:    "Factorial",
-		Parameters:    rmi.EncodeArguments(num),
-		HasParameters: true,
-	}
-	log.Println("client stub calling method:", methodCall)
-	body, _ := json.Marshal(methodCall)
-	requestBody := bytes.NewBuffer(body)
-	url := rmi.RMIUrl(h.remoteAddress)
-	log.Println("sending request:", requestBody, " address:", url)
-	response, err := http.Post(url, "application/json", requestBody)
-	log.Println("response:", response, err)
-	defer response.Body.Close()
-	responseBody, _ := ioutil.ReadAll(response.Body)
-	log.Println("response:", string(responseBody))
-	result := rmi.DecodeArguments(string(responseBody))[0].(uint64)
-	log.Println("RMI result:", result, err)
-	return result
-}
+	factorialStubIface1 := lookup("Factorial", 1)
+	var factorialStub1 rmi.Factorial = factorialStubIface1.(rmi.Factorial)
+	factResult1 := factorialStub1.Factorial(20)
+	log.Printf("factroial %d!=%d", 20, factResult1)
 
-func (h *FactorialClientStub) Name() string {
-	return "Factorial"
-}
-
-func (h *FactorialClientStub) Version() uint {
-	return 1
-}
-
-func (h *FactorialClientStub) SetRemoteAddress(address string) {
-	h.remoteAddress = address
+	factorialStubIface2 := lookup("Factorial", 2)
+	var factorialStub2 rmi.Factorial = factorialStubIface2.(rmi.Factorial)
+	factResult2 := factorialStub2.Factorial(20)
+	log.Printf("factroial %d!=%d", 20, factResult2)
 }

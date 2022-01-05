@@ -48,10 +48,11 @@ type ServerStub interface {
 	Version() uint
 }
 
-type StubObject interface {
+type ClientStub interface {
 	Name() string
 	Version() uint
 	SetRemoteAddress(remoteAddress string)
+	SetVersion(version uint)
 }
 
 type MethodCall struct {
@@ -87,7 +88,7 @@ func WaitForServer(host string) {
 
 func GenerateKey(name string, version uint) string {
 	key := fmt.Sprintf("%s:%d", name, version)
-	log.Println("generated key:", key)
+	// log.Println("generated key:", key)
 	return key
 }
 
@@ -97,12 +98,12 @@ func RMIUrl(address string) string {
 
 func DecodeArguments(parameters string) []interface{} {
 
-	log.Println("decoding args:", parameters)
+	// log.Println("decoding args:", parameters)
 
 	params := strings.Split(parameters, "|")
 	arguments := make([]interface{}, len(params))
 
-	log.Println("parsed parameters:", params)
+	// log.Println("parsed parameters:", params)
 
 	for i, parameter := range params {
 		arguments[i] = parameter
@@ -127,7 +128,7 @@ func DecodeArguments(parameters string) []interface{} {
 			continue
 		}
 	}
-	log.Println("decoded args:", arguments)
+	// log.Println("decoded args:", arguments)
 	return arguments
 }
 
@@ -138,6 +139,6 @@ func EncodeArguments(args ...interface{}) string {
 		buffer.WriteString(s)
 	}
 	res := buffer.String()
-	log.Println("encoded args:", res)
+	// log.Println("encoded args:", res)
 	return res
 }
