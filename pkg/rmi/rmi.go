@@ -1,16 +1,20 @@
 package rmi
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log"
 	"net"
 	"os/exec"
+	"strconv"
+	"strings"
 	"time"
 )
 
 type Hello interface {
 	SayHello() string
+	SayHelloTo(name string) string
 }
 
 type Calculator interface {
@@ -89,4 +93,36 @@ func GenerateKey(name string, version uint) string {
 
 func RMIUrl(address string) string {
 	return fmt.Sprintf("http://%s/remote", address)
+}
+
+func DecodeArguments(parameters string) []interface{} {
+
+	params := strings.Split(parameters, "|")
+	arguments := make([]interface{}, len(params))
+
+	for i, parameter := range params {
+		arguments[i] = parameter
+		intValue, err := strconv.Atoi(parameter)
+		if err == nil {
+			arguments[i] = intValue
+		}
+		floatValue, err := strconv.ParseFloat(parameter, 32)
+		if err == nil {
+			arguments[i] = floatValue
+		}
+		boolValue, err := strconv.ParseBool(parameter)
+		if err == nil {
+			arguments[i] = boolValue
+		}
+	}
+	return arguments
+}
+
+func EncodeArguments(args ...interface{}) string {
+	buffer := bytes.NewBufferString("")
+	for _, arg := range args {
+		s := fmt.Sprintf("%v", arg)
+		buffer.WriteString(s)
+	}
+	return buffer.String()
 }

@@ -51,8 +51,32 @@ func (h *HelloStub) SayHello() string {
 	log.Println("response:", response, err)
 	defer response.Body.Close()
 	responseBody, _ := ioutil.ReadAll(response.Body)
+	result := string(responseBody)
+	log.Println("RMI result:", result)
+	return result
+}
+
+func (h *HelloStub) SayHelloTo(name string) string {
+	methodCall := rmi.MethodCall{
+		ObjectName:    "Hello",
+		Version:       1,
+		MethodName:    "SayHelloTo",
+		Parameters:    rmi.EncodeArguments(name),
+		HasParameters: true,
+	}
+	log.Println("client stub calling method:", methodCall)
+	body, _ := json.Marshal(methodCall)
+	requestBody := bytes.NewBuffer(body)
+	url := rmi.RMIUrl(h.remoteAddress)
+	log.Println("sending request:", requestBody, " address:", url)
+	response, err := http.Post(url, "application/json", requestBody)
+	log.Println("response:", response, err)
+	defer response.Body.Close()
+	responseBody, _ := ioutil.ReadAll(response.Body)
 	log.Println("response:", string(responseBody))
-	return string(responseBody)
+	result := string(responseBody)
+	log.Println("RMI result:", result)
+	return result
 }
 
 func (h *HelloStub) Name() string {
@@ -115,7 +139,6 @@ func main() {
 	lookedUp := lookup("Hello", 1)
 	log.Print("looked up:", reflect.TypeOf(lookedUp), lookedUp)
 	var hello rmi.Hello = lookedUp.(rmi.Hello)
-	result := hello.SayHello()
-	log.Print("rmi.Hello object remote call:" + result)
-	// ExecuteCommand()
+	hello.SayHello()
+	hello.SayHelloTo("Amir")
 }

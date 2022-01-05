@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"reflect"
@@ -15,10 +16,10 @@ var objectsContext = make(map[string]interface{})
 func Invoke(any interface{}, name string, args ...interface{}) []reflect.Value {
 	log.Println("interface:", any, "name:", name, "args:", args, "args len:", len(args))
 	inputs := make([]reflect.Value, len(args))
-	log.Println("inputs:", inputs, "len:", len(inputs))
 	for i, _ := range args {
 		inputs[i] = reflect.ValueOf(args[i])
 	}
+	log.Println("inputs:", inputs, "len:", len(inputs))
 	return reflect.ValueOf(any).MethodByName(name).Call(inputs)
 }
 
@@ -29,7 +30,7 @@ func handleMethodCall(methodCall rmi.MethodCall) {
 		values = Invoke(
 			objectsContext[rmi.GenerateKey(methodCall.ObjectName, methodCall.Version)],
 			methodCall.MethodName,
-			methodCall.Parameters)
+			rmi.DecodeArguments(methodCall.Parameters)...)
 	} else {
 		values = Invoke(
 			objectsContext[rmi.GenerateKey(methodCall.ObjectName, methodCall.Version)],
@@ -62,7 +63,7 @@ func main() {
 
 	// we instantiate HelloRemoteObject but save it in an Hello type variable
 	var hello rmi.Hello = HelloRemoteObject{
-		helloSentence: "Hello World",
+		helloSentence: "Hello RMI World!",
 	}
 	register(hello.(rmi.ServerStub))
 	log.Println("running remote server on:", config.REMOTE_HOST)
@@ -99,6 +100,10 @@ func (h HelloRemoteObject) Version() uint {
 
 func (h HelloRemoteObject) SayHello() string {
 	return h.helloSentence
+}
+
+func (h HelloRemoteObject) SayHelloTo(name string) string {
+	return fmt.Sprintf("Hello dear %s!", name)
 }
 
 type Calculator interface {
