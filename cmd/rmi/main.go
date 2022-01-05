@@ -49,11 +49,10 @@ func lookup(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	fmt.Println("0")
+	fmt.Println("running rmi server")
 	http.HandleFunc("/register", register)
-	fmt.Println("1")
 	http.HandleFunc("/lookup", lookup)
 	log.Println("running server on", config.RMI_HOST)
-	http.ListenAndServe(config.RMI_HOST, nil)
-	fmt.Println("3")
+	err := http.ListenAndServe(config.RMI_HOST, nil)
+	log.Println("error occured:", err)
 }

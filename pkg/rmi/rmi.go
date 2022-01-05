@@ -84,3 +84,7 @@ func GenerateKey(name string, version uint) string {
 	log.Println("generated key:", key)
 	return key
 }
+
+func GetUrl(address string) string {
+	return fmt.Sprintf("http://%s", address)
+}

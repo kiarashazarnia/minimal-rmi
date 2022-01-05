@@ -53,7 +53,8 @@ func main() {
 	}
 	register(hello.(rmi.ServerStub))
 	log.Println("running remote server on:", config.REMOTE_HOST)
-	http.ListenAndServe(config.REMOTE_HOST, nil)
+	err := http.ListenAndServe(config.REMOTE_HOST, nil)
+	log.Println("error occured:", err)
 }
 
 func register(object rmi.ServerStub) bool {
