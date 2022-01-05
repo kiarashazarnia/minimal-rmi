@@ -51,10 +51,11 @@ type StubObject interface {
 }
 
 type MethodCall struct {
-	ObjectName string
-	Version    uint
-	MethodName string
-	Parameters string
+	ObjectName    string
+	Version       uint
+	MethodName    string
+	Parameters    string
+	HasParameters bool
 }
 
 func WaitForServer(host string) {

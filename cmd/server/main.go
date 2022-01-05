@@ -13,7 +13,9 @@ import (
 var objectsContext = make(map[string]interface{})
 
 func Invoke(any interface{}, name string, args ...interface{}) []reflect.Value {
+	log.Println("interface:", any, "name:", name, "args:", args, "args len:", len(args))
 	inputs := make([]reflect.Value, len(args))
+	log.Println("inputs:", inputs, "len:", len(inputs))
 	for i, _ := range args {
 		inputs[i] = reflect.ValueOf(args[i])
 	}
@@ -21,23 +23,34 @@ func Invoke(any interface{}, name string, args ...interface{}) []reflect.Value {
 }
 
 func handleMethodCall(methodCall rmi.MethodCall) {
-	values := Invoke(
-		objectsContext[rmi.GenerateKey(methodCall.ObjectName, methodCall.Version)],
-		methodCall.MethodName,
-		methodCall.Parameters)
+	log.Println("invoking method:", methodCall)
+	var values []reflect.Value
+	if methodCall.HasParameters {
+		values = Invoke(
+			objectsContext[rmi.GenerateKey(methodCall.ObjectName, methodCall.Version)],
+			methodCall.MethodName,
+			methodCall.Parameters)
+	} else {
+		values = Invoke(
+			objectsContext[rmi.GenerateKey(methodCall.ObjectName, methodCall.Version)],
+			methodCall.MethodName)
+	}
 	log.Println("method call result:", values)
 }
 
 func remote(w http.ResponseWriter, req *http.Request) {
+
+	log.Println("handing remote method invocation")
+
 	decoder := json.NewDecoder(req.Body)
 	var methodCall rmi.MethodCall
 	err := decoder.Decode(&methodCall)
 	if err != nil {
-		panic(err)
+		log.Println("decoding error:", err)
+		return
 	}
+	log.Println("decoded RMI request:", methodCall)
 	handleMethodCall(methodCall)
-
-	log.Println(methodCall)
 }
 
 var config = rmi.LoadConfig()
@@ -58,7 +71,7 @@ func main() {
 }
 
 func register(object rmi.ServerStub) bool {
-
+	objectsContext[rmi.GenerateKey(object.Name(), object.Version())] = object
 	data := rmi.RegisterObjectCommand{
 		Version:       object.Version(),
 		Name:          object.Name(),

@@ -37,10 +37,11 @@ func (h *HelloStub) SayHello() string {
 	log.Println("client stub saying hello")
 
 	methodCall := rmi.MethodCall{
-		ObjectName: "Hello",
-		Version:    1,
-		MethodName: "SayHello",
-		Parameters: "",
+		ObjectName:    "Hello",
+		Version:       1,
+		MethodName:    "SayHello",
+		Parameters:    "",
+		HasParameters: false,
 	}
 	body, _ := json.Marshal(methodCall)
 	requestBody := bytes.NewBuffer(body)
