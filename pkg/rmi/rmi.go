@@ -24,8 +24,8 @@ type Calculator interface {
 	Devide(a float32, b float32) float32
 }
 
-type Factorial interface {
-	Factorial(num uint64) uint64
+type Fibonacci interface {
+	Fibonacci(num uint64) uint64
 }
 
 type RegisterObjectCommand struct {

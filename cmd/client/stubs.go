@@ -11,24 +11,24 @@ import (
 	"github.com/kiarashazarnia/minimal-rmi/pkg/rmi"
 )
 
-type FactorialClientStub struct {
+type FibonacciClientStub struct {
 	version       uint
 	remoteAddress string
 }
 
-func (factorialStub *FactorialClientStub) Factorial(num uint64) uint64 {
+func (fibonacciStub *FibonacciClientStub) Fibonacci(num uint64) uint64 {
 	start := time.Now()
 	methodCall := rmi.MethodCall{
-		ObjectName:    factorialStub.Name(),
-		Version:       factorialStub.Version(),
-		MethodName:    "Factorial",
+		ObjectName:    fibonacciStub.Name(),
+		Version:       fibonacciStub.Version(),
+		MethodName:    "Fibonacci",
 		Parameters:    rmi.EncodeArguments(num),
 		HasParameters: true,
 	}
 	log.Println("client stub calling method:", methodCall)
 	body, _ := json.Marshal(methodCall)
 	requestBody := bytes.NewBuffer(body)
-	url := rmi.RMIUrl(factorialStub.remoteAddress)
+	url := rmi.RMIUrl(fibonacciStub.remoteAddress)
 	log.Println("sending request:", requestBody, " address:", url)
 	response, err := http.Post(url, "application/json", requestBody)
 	log.Println("response:", response, err)
@@ -38,23 +38,23 @@ func (factorialStub *FactorialClientStub) Factorial(num uint64) uint64 {
 	result := rmi.DecodeArguments(string(responseBody))[0].(uint64)
 	log.Println("RMI result:", result, err)
 	elapsed := time.Since(start)
-	log.Printf("**** Factorial version:%d took %s ******\n", methodCall.Version, elapsed)
+	log.Printf("**** Fibonacci version:%d took %s ******\n", methodCall.Version, elapsed)
 	return result
 }
 
-func (f *FactorialClientStub) Name() string {
-	return "Factorial"
+func (f *FibonacciClientStub) Name() string {
+	return "Fibonacci"
 }
 
-func (f *FactorialClientStub) Version() uint {
+func (f *FibonacciClientStub) Version() uint {
 	return f.version
 }
 
-func (f *FactorialClientStub) SetRemoteAddress(address string) {
+func (f *FibonacciClientStub) SetRemoteAddress(address string) {
 	f.remoteAddress = address
 }
 
-func (f *FactorialClientStub) SetVersion(version uint) {
+func (f *FibonacciClientStub) SetVersion(version uint) {
 	f.version = version
 }
 

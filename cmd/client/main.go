@@ -21,8 +21,8 @@ func lookupStub(name string, version uint, lookupResult rmi.LookupResponse) inte
 func initStubRegistry() {
 	stubRegistry[rmi.GenerateKey("Hello", 1)] = reflect.TypeOf(HelloClientStub{})
 	stubRegistry[rmi.GenerateKey("Hello", 2)] = reflect.TypeOf(HelloClientStub{})
-	stubRegistry[rmi.GenerateKey("Factorial", 1)] = reflect.TypeOf(FactorialClientStub{})
-	stubRegistry[rmi.GenerateKey("Factorial", 2)] = reflect.TypeOf(FactorialClientStub{})
+	stubRegistry[rmi.GenerateKey("Fibonacci", 1)] = reflect.TypeOf(FibonacciClientStub{})
+	stubRegistry[rmi.GenerateKey("Fibonacci", 2)] = reflect.TypeOf(FibonacciClientStub{})
 }
 
 func makeInstance(name string, version uint, remoteAdreess string) interface{} {
@@ -37,10 +37,10 @@ func makeInstance(name string, version uint, remoteAdreess string) interface{} {
 		var helloStub HelloClientStub = v.Interface().(HelloClientStub)
 		log.Println("value interface:", reflect.TypeOf(helloStub))
 		stub = &helloStub
-	case FactorialClientStub:
-		var factorialStub FactorialClientStub = v.Interface().(FactorialClientStub)
-		log.Println("value interface:", reflect.TypeOf(factorialStub))
-		stub = &factorialStub
+	case FibonacciClientStub:
+		var fibonacciStub FibonacciClientStub = v.Interface().(FibonacciClientStub)
+		log.Println("value interface:", reflect.TypeOf(fibonacciStub))
+		stub = &fibonacciStub
 	default:
 		log.Println("error type not registerd:", stubType)
 		return nil
@@ -80,13 +80,13 @@ func main() {
 	hello2.SayHello()
 	hello2.SayHelloTo("Amir")
 
-	factorialStubIface1 := lookup("Factorial", 1)
-	var factorialStub1 rmi.Factorial = factorialStubIface1.(rmi.Factorial)
-	factResult1 := factorialStub1.Factorial(20)
-	log.Printf("factroial %d!=%d", 20, factResult1)
+	fibonacciStubIface1 := lookup("Fibonacci", 1)
+	var fibonacciStub1 rmi.Fibonacci = fibonacciStubIface1.(rmi.Fibonacci)
+	fiboResult1 := fibonacciStub1.Fibonacci(50)
+	log.Printf("fiboroial %d!=%d", 50, fiboResult1)
 
-	factorialStubIface2 := lookup("Factorial", 2)
-	var factorialStub2 rmi.Factorial = factorialStubIface2.(rmi.Factorial)
-	factResult2 := factorialStub2.Factorial(20)
-	log.Printf("factroial %d!=%d", 20, factResult2)
+	fibonacciStubIface2 := lookup("Fibonacci", 2)
+	var fibonacciStub2 rmi.Fibonacci = fibonacciStubIface2.(rmi.Fibonacci)
+	fiboResult2 := fibonacciStub2.Fibonacci(50)
+	log.Printf("fiboroial %d!=%d", 50, fiboResult2)
 }

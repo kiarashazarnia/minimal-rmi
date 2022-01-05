@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/big"
 	"net/http"
 	"reflect"
 
@@ -95,10 +96,10 @@ func initServerStubs() {
 	register(hello1.(rmi.ServerStub))
 	register(hello2.(rmi.ServerStub))
 
-	var factorial1 rmi.Factorial = RecursiveFactorialServerStub{}
-	var factorial2 rmi.Factorial = DynamicFactorialServerStub{}
-	register(factorial1.(rmi.ServerStub))
-	register(factorial2.(rmi.ServerStub))
+	var fibonacci1 rmi.Fibonacci = RecursiveFibonacciServerStub{}
+	var fibonacci2 rmi.Fibonacci = DynamicFibonacciServerStub{}
+	register(fibonacci1.(rmi.ServerStub))
+	register(fibonacci2.(rmi.ServerStub))
 }
 
 func register(object rmi.ServerStub) bool {
@@ -137,39 +138,46 @@ func (h HelloServerStub) SayHelloTo(name string) string {
 	return fmt.Sprintf("Hello dear %s!", name)
 }
 
-type RecursiveFactorialServerStub struct {
+type RecursiveFibonacciServerStub struct {
 }
 
-func (s RecursiveFactorialServerStub) Version() uint {
+func (s RecursiveFibonacciServerStub) Version() uint {
 	return 1
 }
 
-func (s RecursiveFactorialServerStub) Name() string {
-	return "Factorial"
+func (s RecursiveFibonacciServerStub) Name() string {
+	return "Fibonacci"
 }
 
-func (s RecursiveFactorialServerStub) Factorial(num uint64) uint64 {
+func (s RecursiveFibonacciServerStub) Fibonacci(num uint64) uint64 {
 	if num <= 1 {
-		return 1
+		return num
 	}
-	return num * s.Factorial(num-1)
+	return s.Fibonacci(num-1) + s.Fibonacci(num-2)
 }
 
-type DynamicFactorialServerStub struct {
+type DynamicFibonacciServerStub struct {
 }
 
-func (s DynamicFactorialServerStub) Version() uint {
+func (s DynamicFibonacciServerStub) Version() uint {
 	return 2
 }
 
-func (s DynamicFactorialServerStub) Name() string {
-	return "Factorial"
+func (s DynamicFibonacciServerStub) Name() string {
+	return "Fibonacci"
 }
 
-func (s DynamicFactorialServerStub) Factorial(num uint64) uint64 {
-	factVal := uint64(1)
-	for i := uint64(1); i <= num; i++ {
-		factVal *= i
+func (s DynamicFibonacciServerStub) Fibonacci(n uint64) uint64 {
+
+	fn := make([]*big.Int, n+1)
+	for i := uint64(0); i <= n; i++ {
+		var f = big.NewInt(0)
+		if i <= 2 {
+			f.SetUint64(1)
+		} else {
+			f = f.Add(fn[i-1], fn[i-2])
+		}
+		fn[i] = f
 	}
-	return factVal
+	return fn[n].Uint64()
 }
