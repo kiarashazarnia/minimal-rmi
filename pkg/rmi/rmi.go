@@ -24,8 +24,8 @@ type Calculator interface {
 	Devide(a float32, b float32) float32
 }
 
-type Salam struct {
-	Name string
+type Factorial interface {
+	Factorial(num uint64) uint64
 }
 
 type RegisterObjectCommand struct {
@@ -102,19 +102,29 @@ func DecodeArguments(parameters string) []interface{} {
 	params := strings.Split(parameters, "|")
 	arguments := make([]interface{}, len(params))
 
+	log.Println("parsed parameters:", params)
+
 	for i, parameter := range params {
 		arguments[i] = parameter
+		uintValue, err := strconv.ParseUint(parameter, 10, 64)
+		if err == nil {
+			arguments[i] = uintValue
+			continue
+		}
 		intValue, err := strconv.Atoi(parameter)
 		if err == nil {
 			arguments[i] = intValue
+			continue
 		}
 		floatValue, err := strconv.ParseFloat(parameter, 32)
 		if err == nil {
 			arguments[i] = floatValue
+			continue
 		}
 		boolValue, err := strconv.ParseBool(parameter)
 		if err == nil {
 			arguments[i] = boolValue
+			continue
 		}
 	}
 	log.Println("decoded args:", arguments)

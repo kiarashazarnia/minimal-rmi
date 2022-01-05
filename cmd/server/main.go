@@ -37,8 +37,17 @@ func handleMethodCall(methodCall rmi.MethodCall) string {
 			methodCall.MethodName)
 	}
 	log.Println("method call result:", values)
-	result := rmi.EncodeArguments(values)
+
+	result := rmi.EncodeArguments(convertToIfaces(values)...)
 	return result
+}
+
+func convertToIfaces(vals []reflect.Value) []interface{} {
+	args := make([]interface{}, len(vals))
+	for i, v := range vals {
+		args[i] = v.Interface()
+	}
+	return args
 }
 
 func remote(w http.ResponseWriter, req *http.Request) {
@@ -66,15 +75,30 @@ func main() {
 
 	rmi.WaitForServer(config.RMI_HOST)
 	http.HandleFunc("/remote", remote)
-
-	// we instantiate HelloRemoteObject but save it in an Hello type variable
-	var hello rmi.Hello = HelloRemoteObject{
-		helloSentence: "Hello RMI World!",
-	}
-	register(hello.(rmi.ServerStub))
+	initServerStubs()
 	log.Println("running remote server on:", config.REMOTE_HOST)
 	err := http.ListenAndServe(config.REMOTE_HOST, nil)
 	log.Println("error occured:", err)
+}
+
+func initServerStubs() {
+
+	// we instantiate HelloRemoteObject but save it in an Hello type variable
+	var hello1 rmi.Hello = HelloServerStub{
+		helloSentence: "Hello RMI World version 1!",
+		version:       1,
+	}
+	var hello2 rmi.Hello = HelloServerStub{
+		helloSentence: "Hello RMI World version 2!",
+		version:       2,
+	}
+	register(hello1.(rmi.ServerStub))
+	register(hello2.(rmi.ServerStub))
+
+	var factorial1 rmi.Factorial = RecursiveFactorialServerStub{}
+	var factorial2 rmi.Factorial = DynamicFactorialServerStub{}
+	register(factorial1.(rmi.ServerStub))
+	register(factorial2.(rmi.ServerStub))
 }
 
 func register(object rmi.ServerStub) bool {
@@ -92,29 +116,60 @@ func register(object rmi.ServerStub) bool {
 	return response.StatusCode == http.StatusOK
 }
 
-type HelloRemoteObject struct {
+type HelloServerStub struct {
 	helloSentence string
+	version       uint
 }
 
-func (h HelloRemoteObject) Name() string {
+func (h HelloServerStub) Name() string {
 	return "Hello"
 }
 
-func (h HelloRemoteObject) Version() uint {
-	return 1
+func (h HelloServerStub) Version() uint {
+	return h.version
 }
 
-func (h HelloRemoteObject) SayHello() string {
+func (h HelloServerStub) SayHello() string {
 	return h.helloSentence
 }
 
-func (h HelloRemoteObject) SayHelloTo(name string) string {
+func (h HelloServerStub) SayHelloTo(name string) string {
 	return fmt.Sprintf("Hello dear %s!", name)
 }
 
-type Calculator interface {
-	Sum(a float32, b float32) float32
-	Subtract(a float32, b float32) float32
-	Multiple(a float32, b float32) float32
-	Devide(a float32, b float32) float32
+type RecursiveFactorialServerStub struct {
+}
+
+func (s RecursiveFactorialServerStub) Version() uint {
+	return 1
+}
+
+func (s RecursiveFactorialServerStub) Name() string {
+	return "Factorial"
+}
+
+func (s RecursiveFactorialServerStub) Factorial(num uint64) uint64 {
+	if num <= 1 {
+		return 1
+	}
+	return num * s.Factorial(num-1)
+}
+
+type DynamicFactorialServerStub struct {
+}
+
+func (s DynamicFactorialServerStub) Version() uint {
+	return 2
+}
+
+func (s DynamicFactorialServerStub) Name() string {
+	return "Factorial"
+}
+
+func (s DynamicFactorialServerStub) Factorial(num uint64) uint64 {
+	factVal := uint64(1)
+	for i := uint64(1); i <= num; i++ {
+		factVal *= i
+	}
+	return factVal
 }
