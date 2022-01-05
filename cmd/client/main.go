@@ -100,5 +100,5 @@ func main() {
 	var hello rmi.Hello = lookup("<rmi.Hello Value>", 1).(rmi.Hello)
 	result := hello.SayHello()
 	log.Print("rmi.Hello object remote call:" + result)
-	ExecuteCommand()
+	// ExecuteCommand()
 }

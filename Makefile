@@ -21,6 +21,7 @@ run:
 .PHONY: clean
 clean:
 	rm -rf *.out
+	go mod vendor
 
 .PHONY: test
 test:
