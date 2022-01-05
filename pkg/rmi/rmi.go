@@ -97,6 +97,8 @@ func RMIUrl(address string) string {
 
 func DecodeArguments(parameters string) []interface{} {
 
+	log.Println("decoding args:", parameters)
+
 	params := strings.Split(parameters, "|")
 	arguments := make([]interface{}, len(params))
 
@@ -115,6 +117,7 @@ func DecodeArguments(parameters string) []interface{} {
 			arguments[i] = boolValue
 		}
 	}
+	log.Println("decoded args:", arguments)
 	return arguments
 }
 
@@ -124,5 +127,7 @@ func EncodeArguments(args ...interface{}) string {
 		s := fmt.Sprintf("%v", arg)
 		buffer.WriteString(s)
 	}
-	return buffer.String()
+	res := buffer.String()
+	log.Println("encoded args:", res)
+	return res
 }

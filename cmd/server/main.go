@@ -23,7 +23,7 @@ func Invoke(any interface{}, name string, args ...interface{}) []reflect.Value {
 	return reflect.ValueOf(any).MethodByName(name).Call(inputs)
 }
 
-func handleMethodCall(methodCall rmi.MethodCall) {
+func handleMethodCall(methodCall rmi.MethodCall) string {
 	log.Println("invoking method:", methodCall)
 	var values []reflect.Value
 	if methodCall.HasParameters {
@@ -37,6 +37,8 @@ func handleMethodCall(methodCall rmi.MethodCall) {
 			methodCall.MethodName)
 	}
 	log.Println("method call result:", values)
+	result := rmi.EncodeArguments(values)
+	return result
 }
 
 func remote(w http.ResponseWriter, req *http.Request) {
@@ -48,10 +50,14 @@ func remote(w http.ResponseWriter, req *http.Request) {
 	err := decoder.Decode(&methodCall)
 	if err != nil {
 		log.Println("decoding error:", err)
+		w.WriteHeader(500)
 		return
 	}
 	log.Println("decoded RMI request:", methodCall)
-	handleMethodCall(methodCall)
+	result := handleMethodCall(methodCall)
+	w.WriteHeader(200)
+	w.Write([]byte(result))
+	return
 }
 
 var config = rmi.LoadConfig()
