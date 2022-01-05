@@ -47,6 +47,11 @@ func (h *HelloStub) SayHello() string {
 	return string(responseBody)
 }
 
+func (h *HelloStub) SetRemoteAddress(remoteAddress string) {
+	h.remoteAddress = remoteAddress
+}
+
+
 var hello rmi.Hello = lookup("<rmi.Hello Value>", 1).(rmi.Hello)
 result := hello.SayHello()
 
@@ -60,6 +65,6 @@ These material are used to implement this code:
 3. https://dev.to/jinxankit/go-project-structure-and-guidelines-4ccm
 4. https://stackoverflow.com/questions/16465705/how-to-handle-configuration-in-go
 5. https://stackoverflow.com/questions/8103617/call-a-struct-and-its-method-by-name-in-go
-6. 
+6. https://stackoverflow.com/questions/10909685/run-parallel-multiple-commands-at-once-in-the-same-terminal 
 7. 
 8. 

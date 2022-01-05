@@ -16,9 +16,7 @@ rmi: ./cmd/rmi/main.go
 
 .PHONY: run
 run:
-	cmd/rmi
-	cmd/server
-	cmd/client
+	./parallel_commands.sh ./server.out ./client.out ./rmi.out
 
 .PHONY: clean
 clean:

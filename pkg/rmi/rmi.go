@@ -30,13 +30,23 @@ type RegisterObjectCommand struct {
 	RemoteAddress string
 }
 
-type LookupCommand struct {
+type LookupQuery struct {
 	Version uint
 	Name    string
 }
 
+type LookupResponse struct {
+	RemoteAddress string
+}
+
+type StubObject interface {
+	Name() string
+	Version() uint
+	SetRemoteAddress(remoteAddress string)
+}
+
 type MethodCall struct {
-	Target     LookupCommand
+	Target     LookupQuery
 	MethodName string
 	Parameters string
 }

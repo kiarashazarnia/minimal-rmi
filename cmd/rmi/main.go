@@ -36,12 +36,12 @@ func register(w http.ResponseWriter, req *http.Request) {
 
 func lookup(w http.ResponseWriter, req *http.Request) {
 	decoder := json.NewDecoder(req.Body)
-	var lookupCommand rmi.LookupCommand
-	err := decoder.Decode(&lookupCommand)
+	var LookupQuery rmi.LookupQuery
+	err := decoder.Decode(&LookupQuery)
 	if err != nil {
 		panic(err)
 	}
-	objectKey := rmi.GenerateKey(lookupCommand.Name, lookupCommand.Version)
+	objectKey := rmi.GenerateKey(LookupQuery.Name, LookupQuery.Version)
 	remoteObject := registryContext[objectKey]
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "applicatoin/json")
